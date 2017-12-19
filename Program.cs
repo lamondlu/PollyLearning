@@ -24,7 +24,9 @@ namespace FirstPolly
         {
             //RetryThreeTime();
 
-            WaitRetry();
+            //WaitRetry();
+
+            FallbackPolicy();
 
             Console.Read();
         }
@@ -32,6 +34,19 @@ namespace FirstPolly
         static void ReportaError(Exception e, TimeSpan tiempo, int intento, Context contexto)
         {
             Console.WriteLine($"异常: {intento:00} (调用秒数: {tiempo.Seconds} 秒)\t执行时间: {DateTime.Now}");
+        }
+
+        static void FallbackPolicy()
+        {
+            var fallbackPolicy = Policy<string>
+                .Handle<Exception>()
+                .Fallback("执行失败，返回Fallback");
+
+            var fallback = fallbackPolicy.Execute(() => {
+                throw new Exception();
+            });
+
+            Console.WriteLine(fallback);
         }
 
         static void WaitRetry()
