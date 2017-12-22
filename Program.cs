@@ -20,13 +20,20 @@ namespace FirstPolly
             throw new DivideByZeroException();
         }
 
+        static string MyException()
+        {
+            return "Hello World";
+        }
+
         static void Main(string[] args)
         {
             //RetryThreeTime();
 
             //WaitRetry();
 
-            FallbackPolicy();
+            //FallbackPolicy();
+
+            HandleResult();
 
             Console.Read();
         }
@@ -36,13 +43,31 @@ namespace FirstPolly
             Console.WriteLine($"异常: {intento:00} (调用秒数: {tiempo.Seconds} 秒)\t执行时间: {DateTime.Now}");
         }
 
+        static void HandleResult()
+        {
+            var handleResultPolicy = Policy.HandleResult<string>((r) =>
+            {
+                return r == "Hello World";
+            }).Retry(3, (ex, count) =>
+            {
+                Console.WriteLine("执行失败! 重试次数 {0}", count);
+                Console.WriteLine("异常来自 {0}", ex.GetType().Name);
+            });
+
+            handleResultPolicy.Execute(() =>
+            {
+                return MyException();
+            });
+        }
+
         static void FallbackPolicy()
         {
             var fallbackPolicy = Policy<string>
                 .Handle<Exception>()
                 .Fallback("执行失败，返回Fallback");
 
-            var fallback = fallbackPolicy.Execute(() => {
+            var fallback = fallbackPolicy.Execute(() =>
+            {
                 throw new Exception();
             });
 
